@@ -1,6 +1,8 @@
 # print("pylox/repl.py")
 
 import cmd
+from io import StringIO
+
 from .pylox import Lox
 from .lexer import Lexer
 
@@ -58,7 +60,7 @@ class LexerREPL(cmd.Cmd):
         return True
 
     def default(self, arg):
-        lexer = Lexer(arg)
+        lexer = Lexer(StringIO(arg))
         tokens = list(lexer)
         for token in tokens:
             print(token)

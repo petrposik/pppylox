@@ -2,6 +2,7 @@
 
 import sys
 from pathlib import Path
+from io import StringIO
 
 from .lexer import Lexer
 
@@ -33,5 +34,5 @@ class Lox:
             self.exec_line(line)
 
     def exec_line(self, line):
-        lexer = Lexer(line)
+        lexer = Lexer(StringIO(line))
         print(list(lexer))
