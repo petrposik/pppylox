@@ -1,12 +1,15 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
+from abc import ABC, abstractmethod
 
 from .lexer import Token
 
 
-class Expr:
+class Expr(ABC):
+    @abstractmethod
     def accept(visitor: Visitor):
-        raise NotImplementedError
+        pass
 
 
 @dataclass
@@ -44,15 +47,19 @@ class Literal(Expr):
         return visitor.visit_literal_expr(self)
 
 
-class Visitor:
+class Visitor(ABC):
+    @abstractmethod
     def visit_binary_expr(self, expr: Binary):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def visit_unary_expr(self, expr: Unary):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def visit_grouping_expr(self, expr: Grouping):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def visit_literal_expr(self, expr: Literal):
-        raise NotImplementedError
+        pass
