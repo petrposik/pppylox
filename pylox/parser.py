@@ -21,6 +21,7 @@ class Parser:
         return LoxParserError(message)
 
     def synchronize(self):
+        """Skip tokens until the next statement starts"""
         while not self.exhausted:
             if self.peek().type == TokenType.SEMICOLON:
                 self.consume()
