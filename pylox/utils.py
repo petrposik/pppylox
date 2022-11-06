@@ -89,7 +89,7 @@ class Peekable:
             item = next(self.seq)
         except StopIteration:
             item = None
-        return None
+        return item
 
     def consume(self):
         """Consume and return next char"""

@@ -1,7 +1,7 @@
-from .lexer import Lexer, TokenType
+from .lexer import Lexer, TokenType, error_at
 from .utils import Peekable
-from .exceptions import *
 from .ast import *
+from .errors import *
 
 
 class Parser:
@@ -9,10 +9,34 @@ class Parser:
 
     def __init__(self, lexer: Lexer):
         self.lexer = Peekable(lexer)
+        self.had_error = False
 
     @property
     def exhausted(self):
         return self.lexer.peek().type == TokenType.EOF
+
+    def error(self, token: Token, message: str) -> LoxParserError:
+        self.had_error = True
+        error_at(token, message)
+        return LoxParserError(message)
+
+    def synchronize(self):
+        while not self.exhausted:
+            if self.peek().type == TokenType.SEMICOLON:
+                self.consume()
+                return
+            if self.peek().type in {
+                TokenType.CLASS,
+                TokenType.FUN,
+                TokenType.VAR,
+                TokenType.FOR,
+                TokenType.IF,
+                TokenType.WHILE,
+                TokenType.PRINT,
+                TokenType.RETURN,
+            }:
+                return
+            self.consume()
 
     def consume(self):
         if self.exhausted:
@@ -28,7 +52,13 @@ class Parser:
         """Return next token if its type matches; otherwise return None"""
         if self.lexer.peek().type in types:
             return self.consume()
-        raise LoxParserError(message)
+        raise self.error(self.lexer.peek(), message)
+
+    def parse(self) -> Expr:
+        try:
+            return self.expression()
+        except LoxParserError as e:
+            return None
 
     def expression(self) -> Expr:
         return self.equality()
@@ -109,3 +139,5 @@ class Parser:
             expr: Expr = self.expression()
             self.expect(TokenType.RIGHT_PAREN, "Expected ')' after expression.")
             return Grouping(expr)
+
+        raise self.error(self.lexer.peek(), "Expression expected.")

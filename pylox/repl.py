@@ -2,9 +2,11 @@
 
 import cmd
 from io import StringIO
+from pprint import pprint
 
 from .pylox import Lox
 from .lexer import Lexer
+from .parser import Parser
 
 
 class LoxREPL(cmd.Cmd):
@@ -22,10 +24,10 @@ class LoxREPL(cmd.Cmd):
         LexerREPL().cmdloop()
         return False
 
-    # def do_parser(self, arg: str) -> bool:
-    #     "Enter Lox parser testing mode. Write strings and see results produced by Lox parser."
-    #     ParserREPL().cmdloop()
-    #     return False
+    def do_parser(self, arg: str) -> bool:
+        "Enter Lox parser testing mode. Write strings and see results produced by Lox parser."
+        ParserREPL().cmdloop()
+        return False
 
     def do_reset(self, arg: str) -> bool:
         "Reset the Lox interpreter"
@@ -64,4 +66,25 @@ class LexerREPL(cmd.Cmd):
         tokens = list(lexer)
         for token in tokens:
             print(token)
+        return False
+
+
+class ParserREPL(cmd.Cmd):
+    intro = "Entering Lox parser. Enter strings and see the AST made by the Lox parser."
+    prompt = "\nlox parser> "
+
+    def do_quit(self, arg):
+        print("Leaving Lox parser.")
+        return True
+
+    def do_expr(self, arg):
+        lexer = Lexer(StringIO(arg))
+        ast = Parser(lexer).expression()
+        pprint(ast)
+        return False
+
+    def default(self, arg):
+        lexer = Lexer(StringIO(arg))
+        ast = Parser(lexer).parse()
+        pprint(ast)
         return False
