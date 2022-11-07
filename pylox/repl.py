@@ -7,6 +7,7 @@ from pprint import pprint
 from .pylox import Lox
 from .lexer import Lexer
 from .parser import Parser
+from .interpreter import Interpreter
 
 
 class LoxREPL(cmd.Cmd):
@@ -24,9 +25,31 @@ class LoxREPL(cmd.Cmd):
         LexerREPL().cmdloop()
         return False
 
+    def do_l(self, arg: str) -> bool:
+        "Apply lexer to the following code, print the list of tokens"
+        lexer = Lexer(StringIO(arg))
+        tokens = list(lexer)
+        pprint(tokens)
+        return False
+
     def do_parser(self, arg: str) -> bool:
         "Enter Lox parser testing mode. Write strings and see results produced by Lox parser."
         ParserREPL().cmdloop()
+        return False
+
+    def do_p(self, arg: str) -> bool:
+        "Apply lexer to the following code, print the list of tokens"
+        lexer = Lexer(StringIO(arg))
+        ast = Parser(lexer).parse()
+        pprint(ast)
+        return False
+
+    def do_i(self, arg: str) -> bool:
+        "Apply lexer to the following code, print the list of tokens"
+        lexer = Lexer(StringIO(arg))
+        ast = Parser(lexer).parse()
+        value = Interpreter().evaluate(ast)
+        pprint(value)
         return False
 
     def do_reset(self, arg: str) -> bool:
@@ -79,7 +102,7 @@ class ParserREPL(cmd.Cmd):
 
     def do_expr(self, arg):
         lexer = Lexer(StringIO(arg))
-        ast = Parser(lexer).expression()
+        ast = Parser(lexer).parse()
         pprint(ast)
         return False
 
