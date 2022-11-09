@@ -1,13 +1,14 @@
-from .lexer import Lexer, TokenType, error_at
-from .utils import Peekable
 from .ast import *
 from .errors import *
+from .lexer import Lexer, TokenType
+from .utils import Peekable
 
 
 class Parser:
     """A recursive descent parser for Lox langugae"""
 
-    def __init__(self, lexer: Lexer):
+    def __init__(self, lox, lexer: Lexer):
+        self.lox = lox
         self.lexer = Peekable(lexer)
         self.had_error = False
 
@@ -17,7 +18,7 @@ class Parser:
 
     def error(self, token: Token, message: str) -> LoxParserError:
         self.had_error = True
-        error_at(token, message)
+        self.lox.error_at(token, message)
         return LoxParserError(message)
 
     def synchronize(self):
@@ -44,12 +45,12 @@ class Parser:
             return self.lexer.peek()
         return self.lexer.consume()
 
-    def accept(self, *types: list[TokenType]):
+    def accept(self, types: list[TokenType]):
         """Return next token if its type matches; otherwise return None"""
         if self.lexer.peek().type in types:
             return self.consume()
 
-    def expect(self, *types: list[TokenType], message):
+    def expect(self, types: list[TokenType], message):
         """Return next token if its type matches; otherwise return None"""
         if self.lexer.peek().type in types:
             return self.consume()
@@ -69,7 +70,7 @@ class Parser:
         equality       → comparison ( ( "!=" | "==" ) comparison )* ;
         """
         expr: Expr = self.comparison()
-        while operator := self.accept(TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL):
+        while operator := self.accept((TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL)):
             right: Expr = self.comparison()
             expr = Binary(expr, operator, right)
         return expr
@@ -85,7 +86,7 @@ class Parser:
             TokenType.LESS,
             TokenType.LESS_EQUAL,
         )
-        while operator := self.accept(*required):
+        while operator := self.accept(required):
             right: Expr = self.term()
             expr = Binary(expr, operator, right)
         return expr
@@ -96,7 +97,7 @@ class Parser:
         """
         expr: Expr = self.factor()
         required = (TokenType.MINUS, TokenType.PLUS)
-        while operator := self.accept(*required):
+        while operator := self.accept(required):
             right: Expr = self.factor()
             expr = Binary(expr, operator, right)
         return expr
@@ -107,7 +108,7 @@ class Parser:
         """
         expr: Expr = self.unary()
         required = (TokenType.STAR, TokenType.SLASH)
-        while operator := self.accept(*required):
+        while operator := self.accept(required):
             right: Expr = self.unary()
             expr = Binary(expr, operator, right)
         return expr
@@ -116,7 +117,7 @@ class Parser:
         """Parse using the unary rule of the grammar
         unary           → ( "!" | "-" ) unary | primary;
         """
-        if operator := self.accept(TokenType.BANG, TokenType.MINUS):
+        if operator := self.accept((TokenType.BANG, TokenType.MINUS)):
             right: Expr = self.unary()
             return Unary(operator, right)
         return self.primary()
@@ -126,19 +127,19 @@ class Parser:
         primary         → NUMBER | STRING | "true" | "false" | "nil"
                         | "(" expression ")" ;
         """
-        if self.accept(TokenType.FALSE):
+        if self.accept((TokenType.FALSE,)):
             return Literal(False)
-        if self.accept(TokenType.TRUE):
+        if self.accept((TokenType.TRUE,)):
             return Literal(True)
-        if self.accept(TokenType.NIL):
+        if self.accept((TokenType.NIL,)):
             return Literal(None)
 
-        if token := self.accept(TokenType.NUMBER, TokenType.STRING):
+        if token := self.accept((TokenType.NUMBER, TokenType.STRING)):
             return Literal(token.literal)
 
-        if self.accept(TokenType.LEFT_PAREN):
+        if self.accept((TokenType.LEFT_PAREN,)):
             expr: Expr = self.expression()
-            self.expect(TokenType.RIGHT_PAREN, "Expected ')' after expression.")
+            self.expect((TokenType.RIGHT_PAREN,), "Expected ')' after expression.")
             return Grouping(expr)
 
         raise self.error(self.lexer.peek(), "Expression expected.")

@@ -4,6 +4,16 @@ from .errors import *
 
 
 class Interpreter(Visitor):
+    def __init__(self, lox):
+        self.lox = lox
+
+    def interpret(self, expression: Expr):
+        try:
+            value = self.evaluate(expression)
+            print(self.stringify(value))
+        except LoxRuntimeError as e:
+            self.lox.runtime_error(e)
+
     def evaluate(self, expr: Expr):
         return expr.accept(self)
 
@@ -84,6 +94,16 @@ class Interpreter(Visitor):
         if a is None:
             return False
         return a == b
+
+    def stringify(self, value):
+        if value is None:
+            return "nil"
+        if isinstance(value, float):
+            text = str(value)
+            if text.endswith(".0"):
+                text = text[:-2]
+            return text
+        return str(value)
 
     def check_number_operand(self, operator: Token, operand):
         if isinstance(operand, float):

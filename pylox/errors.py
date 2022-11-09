@@ -11,14 +11,9 @@ class LoxParserError(LoxError):
 
 
 class LoxRuntimeError(LoxError):
-    def __init__(self, token, message):
-        super().__init__(message)
+    def __init__(self, token, *args):
+        super().__init__(*args)
         self.token = token
 
-
-def error_on(line: int, message: str) -> None:
-    report(line, "", message)
-
-
-def report(line: int, where: str, message: str) -> None:
-    print(f"[line {line}] Error {where}: {message}")
+    def __str__(self):
+        return super().__str__()

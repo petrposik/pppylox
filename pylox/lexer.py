@@ -8,7 +8,7 @@ from enum import Enum, auto
 from dataclasses import dataclass
 from typing import Any, Union
 
-from .errors import LoxLexerError, report
+from .errors import LoxLexerError
 from .utils import PeekableIO
 from .logger import logger
 
@@ -105,15 +105,9 @@ class Token:
         return f"{self.type} {self.lexeme} {self.literal}"
 
 
-def error_at(token: Token, message: str):
-    if token.type == TokenType.EOF:
-        report(token.loc.row, " at end", message)
-    else:
-        report(token.loc.row, f" at '{token.lexeme}'", message)
-
-
 class Lexer:
-    def __init__(self, chars, fpath=""):
+    def __init__(self, lox, chars, fpath=""):
+        self.lox = lox
         self.chars = PeekableIO(chars, lookahead=2)
         self.had_error = False
         self.exhausted = False
