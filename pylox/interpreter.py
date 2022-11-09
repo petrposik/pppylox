@@ -1,5 +1,6 @@
 from .ast import *
 from .lexer import *
+from .errors import *
 
 
 class Interpreter(Visitor):
@@ -21,23 +22,33 @@ class Interpreter(Visitor):
             case TokenType.EQUAL_EQUAL:
                 return self.is_equal(left, right)
             case TokenType.GREATER:
+                self.check_number_operands(expr.operator, left, right)
                 return float(left) > float(right)
             case TokenType.GREATER_EQUAL:
+                self.check_number_operands(expr.operator, left, right)
                 return float(left) >= float(right)
             case TokenType.LESS:
+                self.check_number_operands(expr.operator, left, right)
                 return float(left) < float(right)
             case TokenType.LESS_EQUAL:
+                self.check_number_operands(expr.operator, left, right)
                 return float(left) <= float(right)
             case TokenType.MINUS:
+                self.check_number_operands(expr.operator, left, right)
                 return float(left) - float(right)
             case TokenType.PLUS:
                 if isinstance(left, float) and isinstance(right, float):
                     return float(left) + float(right)
                 if isinstance(right, str) and isinstance(left, str):
                     return str(left) + str(right)
+                raise LoxRuntimeError(
+                    expr.operator, "Both operands must be strings or numbers."
+                )
             case TokenType.SLASH:
+                self.check_number_operands(expr.operator, left, right)
                 return float(left) / float(right)
             case TokenType.STAR:
+                self.check_number_operands(expr.operator, left, right)
                 return float(left) * float(right)
         # Unreachable.
         return None
@@ -54,6 +65,7 @@ class Interpreter(Visitor):
             case TokenType.BANG:
                 return not self.truthy(right)
             case TokenType.MINUS:
+                self.check_number_operand(expr.operator, right)
                 return -right
         # Unreachable.
         return None
@@ -72,6 +84,16 @@ class Interpreter(Visitor):
         if a is None:
             return False
         return a == b
+
+    def check_number_operand(self, operator: Token, operand):
+        if isinstance(operand, float):
+            return
+        raise LoxRuntimeError(operator, "Operand must be a number.")
+
+    def check_number_operands(self, operator: Token, left, right):
+        if isinstance(left, float) and isinstance(right, float):
+            return
+        raise LoxRuntimeError(operator, "Operands must be a numbers.")
 
 
 if __name__ == "__main__":
