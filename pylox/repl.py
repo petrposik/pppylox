@@ -27,7 +27,7 @@ class LoxREPL(cmd.Cmd):
 
     def do_l(self, arg: str) -> bool:
         "Apply lexer to the following code, print the list of tokens"
-        lexer = Lexer(StringIO(arg))
+        lexer = Lexer(self.lox, StringIO(arg))
         tokens = list(lexer)
         pprint(tokens)
         return False
@@ -39,16 +39,18 @@ class LoxREPL(cmd.Cmd):
 
     def do_p(self, arg: str) -> bool:
         "Apply lexer to the following code, print the list of tokens"
-        lexer = Lexer(StringIO(arg))
-        ast = Parser(lexer).parse()
+        lexer = Lexer(self.lox, StringIO(arg))
+        ast = Parser(self.lox, lexer).parse()
         pprint(ast)
         return False
 
     def do_i(self, arg: str) -> bool:
         "Apply lexer to the following code, print the list of tokens"
-        lexer = Lexer(StringIO(arg))
-        ast = Parser(lexer).parse()
-        value = Interpreter().evaluate(ast)
+        lexer = Lexer(self.lox, StringIO(arg))
+        ast = Parser(self.lox, lexer).parse()
+        value = Interpreter(
+            self.lox,
+        ).evaluate(ast)
         pprint(value)
         return False
 
@@ -79,13 +81,14 @@ class LoxREPL(cmd.Cmd):
 class LexerREPL(cmd.Cmd):
     intro = "Entering Lox lexer. Enter strings and see how Lox lexer tokenizes them."
     prompt = "\nlox lexer> "
+    lox = Lox()
 
     def do_quit(self, arg):
         print("Leaving Lox lexer.")
         return True
 
     def default(self, arg):
-        lexer = Lexer(StringIO(arg))
+        lexer = Lexer(self.lox, StringIO(arg))
         tokens = list(lexer)
         for token in tokens:
             print(token)
@@ -95,19 +98,20 @@ class LexerREPL(cmd.Cmd):
 class ParserREPL(cmd.Cmd):
     intro = "Entering Lox parser. Enter strings and see the AST made by the Lox parser."
     prompt = "\nlox parser> "
+    lox = Lox()
 
     def do_quit(self, arg):
         print("Leaving Lox parser.")
         return True
 
     def do_expr(self, arg):
-        lexer = Lexer(StringIO(arg))
-        ast = Parser(lexer).parse()
+        lexer = Lexer(self.lox, StringIO(arg))
+        ast = Parser(self.lox, lexer).parse()
         pprint(ast)
         return False
 
     def default(self, arg):
-        lexer = Lexer(StringIO(arg))
-        ast = Parser(lexer).parse()
+        lexer = Lexer(self.lox, StringIO(arg))
+        ast = Parser(self.lox, lexer).parse()
         pprint(ast)
         return False

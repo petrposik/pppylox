@@ -2,7 +2,7 @@ from .ast import *
 from .lexer import *
 
 
-class ASTPrinter(Visitor):
+class ASTPrinter(ExprVisitor):
     def print(self, expr: Expr):
         return expr.accept(self)
 

@@ -50,8 +50,8 @@ class Lox:
     def exec_line(self, line):
         lexer = Lexer(self, StringIO(line))
         parser = Parser(self, lexer)
-        expr = parser.parse()
+        statements = parser.parse()
         # Stop if there was a syntax error.
         if parser.had_error:
             return
-        self.interpreter.interpret(expr)
+        self.interpreter.interpret(statements)

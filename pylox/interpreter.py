@@ -3,19 +3,38 @@ from .lexer import *
 from .errors import *
 
 
-class Interpreter(Visitor):
+class Interpreter(ExprVisitor, StmtVisitor):
     def __init__(self, lox):
         self.lox = lox
 
-    def interpret(self, expression: Expr):
+    def interpret(self, statements: list[Stmt]) -> None:
         try:
-            value = self.evaluate(expression)
-            print(self.stringify(value))
-        except LoxRuntimeError as e:
-            self.lox.runtime_error(e)
+            for statement in statements:
+                self.execute(statement)
+        except LoxRuntimeError as error:
+            self.lox.runtimeError(error)
+
+    # def interpret(self, expression: Expr):
+    #     try:
+    #         value = self.evaluate(expression)
+    #         print(self.stringify(value))
+    #     except LoxRuntimeError as e:
+    #         self.lox.runtime_error(e)
 
     def evaluate(self, expr: Expr):
         return expr.accept(self)
+
+    def execute(self, stmt: Stmt) -> None:
+        stmt.accept(self)
+
+    def visit_expr_stmt(self, stmt: ExprStmt) -> None:
+        _ = self.evaluate(stmt.expr)
+        return None
+
+    def visit_print_stmt(self, stmt: PrintStmt) -> None:
+        value = self.evaluate(stmt.expr)
+        print(self.stringify(value))
+        return None
 
     # def parenthesize(self, name: str, *exprs: list[Expr]):
     #     parts = [f"({name} "]

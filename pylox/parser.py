@@ -56,14 +56,34 @@ class Parser:
             return self.consume()
         raise self.error(self.lexer.peek(), message)
 
-    def parse(self) -> Expr:
-        try:
-            return self.expression()
-        except LoxParserError as e:
-            return None
+    def parse(self) -> list[Expr]:
+        statements = []
+        while not self.exhausted:
+            statements.append(self.statement())
+        return statements
+
+        # try:
+        #     return self.expression()
+        # except LoxParserError as e:
+        #     return None
 
     def expression(self) -> Expr:
         return self.equality()
+
+    def statement(self) -> Stmt:
+        if self.accept((TokenType.PRINT,)):
+            return self.print_stmt()
+        return self.expr_stmt()
+
+    def print_stmt(self) -> Stmt:
+        value: Expr = self.expression()
+        self.expect((TokenType.SEMICOLON,), "Expected ';' after value.")
+        return PrintStmt(value)
+
+    def expr_stmt(self) -> Stmt:
+        expr: Expr = self.expression()
+        self.expect((TokenType.SEMICOLON,), "Expected ';' after expression.")
+        return ExprStmt(expr)
 
     def equality(self) -> Expr:
         """Parse using the equality rule of the grammar
