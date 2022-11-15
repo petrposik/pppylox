@@ -48,6 +48,15 @@ class Literal(Expr):
         return visitor.visit_literal_expr(self)
 
 
+# "Variable : Token name"
+@dataclass
+class Variable(Expr):
+    name: Token
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_variable_expr(self)
+
+
 class ExprVisitor(ABC):
     @abstractmethod
     def visit_binary_expr(self, expr: Binary):
@@ -89,6 +98,16 @@ class ExprStmt(Stmt):
 
     def accept(self, visitor: StmtVisitor):
         return visitor.visit_expr_stmt(self)
+
+
+# "Var        : Token name, Expr initializer"
+@dataclass
+class VarStmt(Stmt):
+    name: Token
+    initializer: Expr
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_var_stmt(self)
 
 
 class StmtVisitor(ABC):

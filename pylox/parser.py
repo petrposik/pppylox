@@ -59,7 +59,7 @@ class Parser:
     def parse(self) -> list[Expr]:
         statements = []
         while not self.exhausted:
-            statements.append(self.statement())
+            statements.append(self.declaration())
         return statements
 
         # try:
@@ -75,10 +75,27 @@ class Parser:
             return self.print_stmt()
         return self.expr_stmt()
 
+    def declaration(self) -> Stmt:
+        try:
+            if self.accept((TokenType.VAR,)):
+                return self.var_declaration_stmt()
+            return self.statement()
+        except LoxParserError:
+            self.synchronize()
+            return None
+
     def print_stmt(self) -> Stmt:
         value: Expr = self.expression()
         self.expect((TokenType.SEMICOLON,), "Expected ';' after value.")
         return PrintStmt(value)
+
+    def var_declaration_stmt(self) -> Stmt:
+        name: Token = self.expect((TokenType.IDENTIFIER,), "Variable name expected.")
+        initializer: Expr = None
+        if self.accept((TokenType.EQUAL,)):
+            initializer = self.expression()
+        self.expect((TokenType.SEMICOLON,), "Expected ';' after variable declaration.")
+        return VarStmt(name, initializer)
 
     def expr_stmt(self) -> Stmt:
         expr: Expr = self.expression()
@@ -156,6 +173,9 @@ class Parser:
 
         if token := self.accept((TokenType.NUMBER, TokenType.STRING)):
             return Literal(token.literal)
+
+        if token := self.accept((TokenType.IDENTIFIER,)):
+            return Variable(token)
 
         if self.accept((TokenType.LEFT_PAREN,)):
             expr: Expr = self.expression()
