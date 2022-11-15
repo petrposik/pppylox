@@ -1,11 +1,13 @@
 from .ast import *
 from .lexer import *
 from .errors import *
+from .environment import *
 
 
 class Interpreter(ExprVisitor, StmtVisitor):
     def __init__(self, lox):
         self.lox = lox
+        self.environment = Environment()
 
     def interpret(self, statements: list[Stmt]) -> None:
         try:
@@ -35,6 +37,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
         value = self.evaluate(stmt.expr)
         print(self.stringify(value))
         return None
+
+    def visit_var_stmt(self, stmt: VarStmt) -> None:
+        value = None
+        if stmt.initializer:
+            value = self.evaluate(stmt.initializer)
+        self.environment.define(stmt.name.lexeme, value)
 
     # def parenthesize(self, name: str, *exprs: list[Expr]):
     #     parts = [f"({name} "]
@@ -98,6 +106,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 return -right
         # Unreachable.
         return None
+
+    def visit_variable_expr(self, expr: Variable):
+        return self.environment.get(expr.name)
 
     def truthy(self, value) -> bool:
         """In Lox, None and False are False, everything else is True."""
