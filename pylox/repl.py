@@ -67,7 +67,7 @@ class LoxREPL(cmd.Cmd):
     def do_exec(self, arg):
         "Load the Lox source from file and execute it"
         try:
-            self.lox.exec(arg)
+            self.lox.run_file(arg)
         except Exception as e:
             print(f"ERROR: Execution of {arg} failed:")
             print(e.message)
@@ -75,7 +75,7 @@ class LoxREPL(cmd.Cmd):
     def default(self, line):
         if line == "EOF":
             return True
-        self.lox.exec_line(line)
+        self.lox.run(line)
 
 
 class LexerREPL(cmd.Cmd):

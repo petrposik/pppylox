@@ -73,6 +73,8 @@ class Parser:
     def statement(self) -> Stmt:
         if self.accept((TokenType.PRINT,)):
             return self.print_stmt()
+        if self.accept((TokenType.LEFT_BRACE,)):
+            return self.block_stmt()
         return self.expr_stmt()
 
     def declaration(self) -> Stmt:
@@ -101,6 +103,13 @@ class Parser:
         expr: Expr = self.expression()
         self.expect((TokenType.SEMICOLON,), "Expected ';' after expression.")
         return ExprStmt(expr)
+
+    def block_stmt(self) -> Stmt:
+        statements: list[Stmt] = []
+        while not self.exhausted and self.lexer.peek().type != TokenType.RIGHT_BRACE:
+            statements.append(self.declaration())
+        self.expect((TokenType.RIGHT_BRACE,), "Expected '}' after block.")
+        return BlockStmt(statements)
 
     def assignment(self) -> Expr:
         expr: Expr = self.equality()

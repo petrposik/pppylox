@@ -20,7 +20,8 @@
             "console": "integratedTerminal",
             "args": [
                 "-m",
-                "pylox"
+                "pylox",
+                "./examples/local_vars.lox"
             ],
             "justMyCode": true,
         }

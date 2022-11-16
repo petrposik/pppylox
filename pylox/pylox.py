@@ -34,21 +34,17 @@ class Lox:
         print(f"{error}\n[line {error.token.loc.row}]", file=sys.stderr)
         self.had_runtime_error = True
 
-    def exec_file(self, fpath):
+    def run_file(self, fpath):
         """Load Lox source code from a file and execute it"""
         code = Path(fpath).read_text(encoding="utf-8")
-        self.exec_code(code)
+        self.run(code)
         if self.had_error:
             sys.exit(65)
         if self.had_runtime_error:
             sys.exit(70)
 
-    def exec_code(self, code):
-        for line in code.split("\n"):
-            self.exec_line(line)
-
-    def exec_line(self, line):
-        lexer = Lexer(self, StringIO(line))
+    def run(self, code: str):
+        lexer = Lexer(self, StringIO(code))
         parser = Parser(self, lexer)
         statements = parser.parse()
         # Stop if there was a syntax error.

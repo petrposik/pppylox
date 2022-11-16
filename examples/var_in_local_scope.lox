@@ -1,0 +1,5 @@
+var a = 1;
+{
+    var a = a + 2;  // Does it print 3 ???
+    print a;
+}

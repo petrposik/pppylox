@@ -69,6 +69,10 @@ class Variable(Expr):
 
 class ExprVisitor(ABC):
     @abstractmethod
+    def visit_assign_expr(self, expr: Assign):
+        pass
+
+    @abstractmethod
     def visit_binary_expr(self, expr: Binary):
         pass
 
@@ -82,6 +86,10 @@ class ExprVisitor(ABC):
 
     @abstractmethod
     def visit_literal_expr(self, expr: Literal):
+        pass
+
+    @abstractmethod
+    def visit_variable_expr(self, expr: Variable):
         pass
 
 
@@ -120,6 +128,14 @@ class VarStmt(Stmt):
         return visitor.visit_var_stmt(self)
 
 
+@dataclass
+class BlockStmt(Stmt):
+    statements: list[Stmt]
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_block_stmt(self)
+
+
 class StmtVisitor(ABC):
     @abstractmethod
     def visit_print_stmt(self, stmt: PrintStmt):
@@ -127,4 +143,12 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visit_expr_stmt(self, expr: ExprStmt):
+        pass
+
+    @abstractmethod
+    def visit_var_stmt(self, expr: ExprStmt):
+        pass
+
+    @abstractmethod
+    def visit_block_stmt(self, expr: ExprStmt):
         pass
