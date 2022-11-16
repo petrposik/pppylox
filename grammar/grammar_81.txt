@@ -11,9 +11,7 @@ exprStmt       → expression ";" ;
 printStmt      → "print" expression ";" ;
 
 
-expression      → assignment ;
-assignment      → IDENTIFIER "=" assignment ;
-                | equality ;
+expression      → equality ;
 equality        → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison      → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term            → factor ( ( "-" | "+" ) factor )* ;

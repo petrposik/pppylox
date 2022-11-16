@@ -24,10 +24,10 @@ class Parser:
     def synchronize(self):
         """Skip tokens until the next statement starts"""
         while not self.exhausted:
-            if self.peek().type == TokenType.SEMICOLON:
+            if self.lexer.peek().type == TokenType.SEMICOLON:
                 self.consume()
                 return
-            if self.peek().type in {
+            if self.lexer.peek().type in {
                 TokenType.CLASS,
                 TokenType.FUN,
                 TokenType.VAR,
@@ -68,7 +68,7 @@ class Parser:
         #     return None
 
     def expression(self) -> Expr:
-        return self.equality()
+        return self.assignment()
 
     def statement(self) -> Stmt:
         if self.accept((TokenType.PRINT,)):
@@ -101,6 +101,16 @@ class Parser:
         expr: Expr = self.expression()
         self.expect((TokenType.SEMICOLON,), "Expected ';' after expression.")
         return ExprStmt(expr)
+
+    def assignment(self) -> Expr:
+        expr: Expr = self.equality()
+        if equals := self.accept((TokenType.EQUAL,)):
+            value: Expr = self.assignment()
+            if isinstance(expr, Variable):
+                name: Token = expr.name
+                return Assign(name, value)
+            self.error(equals, "Invalid assignment target.")
+        return expr
 
     def equality(self) -> Expr:
         """Parse using the equality rule of the grammar

@@ -14,7 +14,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
             for statement in statements:
                 self.execute(statement)
         except LoxRuntimeError as error:
-            self.lox.runtimeError(error)
+            self.lox.runtime_error(error)
 
     # def interpret(self, expression: Expr):
     #     try:
@@ -43,6 +43,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
         if stmt.initializer:
             value = self.evaluate(stmt.initializer)
         self.environment.define(stmt.name.lexeme, value)
+
+    def visit_assign_expr(self, expr: Assign):
+        value = self.evaluate(expr.value)
+        self.environment.assign(expr.name, value)
+        return value
 
     # def parenthesize(self, name: str, *exprs: list[Expr]):
     #     parts = [f"({name} "]
