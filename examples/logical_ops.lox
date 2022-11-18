@@ -1,0 +1,7 @@
+print true and "Should print this";
+print false and "Should NOT print this";
+print true or "Should NOT print this";
+print false or "Should print this";
+
+print "hi" or 2; // "hi".
+print nil or "yes"; // "yes".

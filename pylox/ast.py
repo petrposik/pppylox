@@ -34,6 +34,17 @@ class Binary(Expr):
 
 
 @dataclass
+class Logical(Expr):
+    # "Logical  : Expr left, Token operator, Expr right"
+    left: Expr
+    operator: Token
+    right: Expr
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_logical_expr(self)
+
+
+@dataclass
 class Unary(Expr):
     operator: Token
     right: Expr
@@ -74,6 +85,10 @@ class ExprVisitor(ABC):
 
     @abstractmethod
     def visit_binary_expr(self, expr: Binary):
+        pass
+
+    @abstractmethod
+    def visit_logical_expr(self, expr: Logical):
         pass
 
     @abstractmethod

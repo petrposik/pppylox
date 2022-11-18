@@ -121,6 +121,21 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visit_literal_expr(self, expr: Literal):
         return expr.value
 
+    def visit_logical_expr(self, expr: Logical):
+        left = self.evaluate(expr.left)
+        # Short-circuit if we can
+        if expr.operator.type == TokenType.OR:
+            if self.truthy(left):
+                return left
+        elif expr.operator.type == TokenType.AND:
+            if not self.truthy(left):
+                return left
+        else:
+            assert False, "Unreachable"
+        # Evaluate the second operand if needed
+        right = self.evaluate(expr.right)
+        return right
+
     def visit_unary_expr(self, expr: Unary):
         right = self.evaluate(expr.right)
         match expr.operator.type:
@@ -153,6 +168,8 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def stringify(self, value):
         if value is None:
             return "nil"
+        if isinstance(value, bool):
+            return "true" if value else "false"
         if isinstance(value, float):
             text = str(value)
             if text.endswith(".0"):

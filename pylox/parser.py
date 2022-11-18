@@ -124,13 +124,27 @@ class Parser:
         return BlockStmt(statements)
 
     def assignment(self) -> Expr:
-        expr: Expr = self.equality()
+        expr: Expr = self.logical_or()
         if equals := self.accept((TokenType.EQUAL,)):
             value: Expr = self.assignment()
             if isinstance(expr, Variable):
                 name: Token = expr.name
                 return Assign(name, value)
             self.error(equals, "Invalid assignment target.")
+        return expr
+
+    def logical_or(self) -> Expr:
+        expr = self.logical_and()
+        while operator := self.accept((TokenType.OR,)):
+            right = self.logical_and()
+            expr = Logical(expr, operator, right)
+        return expr
+
+    def logical_and(self) -> Expr:
+        expr = self.equality()
+        while operator := self.accept((TokenType.AND,)):
+            right = self.equality()
+            expr = Logical(expr, operator, right)
         return expr
 
     def equality(self) -> Expr:
