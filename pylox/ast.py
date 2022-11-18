@@ -118,14 +118,25 @@ class ExprStmt(Stmt):
         return visitor.visit_expr_stmt(self)
 
 
-# "Var        : Token name, Expr initializer"
 @dataclass
 class VarStmt(Stmt):
+    # "Var        : Token name, Expr initializer"
     name: Token
     initializer: Expr
 
     def accept(self, visitor: StmtVisitor):
         return visitor.visit_var_stmt(self)
+
+
+@dataclass
+class IfStmt(Stmt):
+    # "If         : Expr condition, Stmt thenBranch, Stmt elseBranch"
+    condition: Expr
+    then_branch: Stmt
+    else_branch: Stmt
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_if_stmt(self)
 
 
 @dataclass
@@ -142,13 +153,17 @@ class StmtVisitor(ABC):
         pass
 
     @abstractmethod
-    def visit_expr_stmt(self, expr: ExprStmt):
+    def visit_expr_stmt(self, stmt: ExprStmt):
         pass
 
     @abstractmethod
-    def visit_var_stmt(self, expr: ExprStmt):
+    def visit_var_stmt(self, stmt: VarStmt):
         pass
 
     @abstractmethod
-    def visit_block_stmt(self, expr: ExprStmt):
+    def visit_block_stmt(self, stmt: BlockStmt):
+        pass
+
+    @abstractmethod
+    def visit_if_stmt(self, stmt: IfStmt):
         pass

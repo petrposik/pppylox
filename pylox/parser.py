@@ -71,11 +71,23 @@ class Parser:
         return self.assignment()
 
     def statement(self) -> Stmt:
+        if self.accept((TokenType.IF,)):
+            return self.if_stmt()
         if self.accept((TokenType.PRINT,)):
             return self.print_stmt()
         if self.accept((TokenType.LEFT_BRACE,)):
             return self.block_stmt()
         return self.expr_stmt()
+
+    def if_stmt(self) -> Stmt:
+        self.expect((TokenType.LEFT_PAREN,), "Expected '(' after 'if'.")
+        condition = self.expression()
+        self.expect((TokenType.RIGHT_PAREN,), "Expected ')' after if contidion.")
+        then_branch = self.statement()
+        else_branch = None
+        if self.accept((TokenType.ELSE,)):
+            else_branch = self.statement()
+        return IfStmt(condition, then_branch, else_branch)
 
     def declaration(self) -> Stmt:
         try:
