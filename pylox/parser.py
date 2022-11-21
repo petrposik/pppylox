@@ -71,6 +71,8 @@ class Parser:
         return self.assignment()
 
     def statement(self) -> Stmt:
+        if self.accept((TokenType.FOR,)):
+            return self.for_stmt()
         if self.accept((TokenType.IF,)):
             return self.if_stmt()
         if self.accept((TokenType.PRINT,)):
@@ -80,6 +82,41 @@ class Parser:
         if self.accept((TokenType.LEFT_BRACE,)):
             return self.block_stmt()
         return self.expr_stmt()
+
+    def for_stmt(self) -> Stmt:
+        # Parse the for loop, but return the equivalent while loop AST
+        self.expect((TokenType.LEFT_PAREN,), "Expected '(' after 'for'.")
+        initializer: Stmt = None
+        if self.accept((TokenType.SEMICOLON,)):
+            initializer = None
+        elif self.accept((TokenType.VAR,)):
+            initializer = self.var_declaration_stmt()
+        else:
+            initializer = self.expr_stmt()
+
+        condition: Expr = None
+        if not self.lexer.peek().type == TokenType.SEMICOLON:
+            condition = self.expression()
+        self.expect((TokenType.SEMICOLON,), "Expected ';' after loop contition.")
+
+        increment: Expr = None
+        if not self.lexer.peek().type == TokenType.RIGHT_PAREN:
+            increment = self.expression()
+        self.expect((TokenType.RIGHT_PAREN,), "Expected ')' after for clauses.")
+
+        body = self.statement()
+
+        # The for loop is parsed, start building the 'while' AST
+
+        if increment:
+            body = BlockStmt([body, ExprStmt(increment)])
+        if not condition:
+            condition = Literal(True)
+        body = WhileStmt(condition, body)
+        if initializer:
+            body = BlockStmt([initializer, body])
+
+        return body
 
     def if_stmt(self) -> Stmt:
         self.expect((TokenType.LEFT_PAREN,), "Expected '(' after 'if'.")

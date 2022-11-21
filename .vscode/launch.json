@@ -33,7 +33,7 @@
             "args": [
                 "-m",
                 "pylox",
-                "./examples/while.lox"
+                "./examples/fib.lox"
             ],
             "justMyCode": true,
         }
