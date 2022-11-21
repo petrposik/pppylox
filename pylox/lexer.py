@@ -187,7 +187,7 @@ class Lexer:
                 if self.chars.accept("="):
                     return self.token(TokenType.LESS_EQUAL, "<=")
                 else:
-                    return self.token(TokenType.LESS_EQUAL, ch)
+                    return self.token(TokenType.LESS, ch)
             case ">":
                 if self.chars.accept("="):
                     return self.token(TokenType.GREATER_EQUAL, ">=")

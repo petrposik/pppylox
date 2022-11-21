@@ -75,6 +75,8 @@ class Parser:
             return self.if_stmt()
         if self.accept((TokenType.PRINT,)):
             return self.print_stmt()
+        if self.accept((TokenType.WHILE,)):
+            return self.while_stmt()
         if self.accept((TokenType.LEFT_BRACE,)):
             return self.block_stmt()
         return self.expr_stmt()
@@ -110,6 +112,13 @@ class Parser:
             initializer = self.expression()
         self.expect((TokenType.SEMICOLON,), "Expected ';' after variable declaration.")
         return VarStmt(name, initializer)
+
+    def while_stmt(self) -> Stmt:
+        self.expect((TokenType.LEFT_PAREN,), "Expected '(' after 'while'.")
+        condition = self.expression()
+        self.expect((TokenType.RIGHT_PAREN,), "Expected ')' after condition.")
+        body = self.statement()
+        return WhileStmt(condition, body)
 
     def expr_stmt(self) -> Stmt:
         expr: Expr = self.expression()

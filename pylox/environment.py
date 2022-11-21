@@ -15,7 +15,7 @@ class Environment:
             self.values[name.lexeme] = value
             return None
         if self.enclosing:
-            self.enclosing.assign(name, value)
+            return self.enclosing.assign(name, value)
         raise LoxRuntimeError(name, f"Undefined variable '{name.lexeme}'.")
 
     def get(self, name: Token):

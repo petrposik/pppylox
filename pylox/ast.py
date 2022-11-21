@@ -155,6 +155,16 @@ class IfStmt(Stmt):
 
 
 @dataclass
+class WhileStmt(Stmt):
+    # "While      : Expr condition, Stmt body"
+    condition: Expr
+    body: Stmt
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_while_stmt(self)
+
+
+@dataclass
 class BlockStmt(Stmt):
     statements: list[Stmt]
 
@@ -181,4 +191,8 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visit_if_stmt(self, stmt: IfStmt):
+        pass
+
+    @abstractmethod
+    def visit_while_stmt(self, stmt: WhileStmt):
         pass
