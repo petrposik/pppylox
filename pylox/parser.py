@@ -130,6 +130,8 @@ class Parser:
 
     def declaration(self) -> Stmt:
         try:
+            if self.accept((TokenType.FUN,)):
+                return self.function("function")
             if self.accept((TokenType.VAR,)):
                 return self.var_declaration_stmt()
             return self.statement()
@@ -162,7 +164,27 @@ class Parser:
         self.expect((TokenType.SEMICOLON,), "Expected ';' after expression.")
         return ExprStmt(expr)
 
-    def block_stmt(self) -> Stmt:
+    def function(self, kind: str) -> FunctionStmt:
+        name: Token = self.expect((TokenType.IDENTIFIER,), f"Expected {kind} name.")
+        self.expect((TokenType.LEFT_PAREN,), f"Expected '(' after {kind} name.")
+        parameters = []
+        if not self.lexer.peek().type == TokenType.RIGHT_PAREN:
+            while True:
+                if len(parameters) >= 255:
+                    self.error(
+                        self.lexer.peek(), "Can't have more than 255 parameters."
+                    )
+                parameters.append(
+                    self.expect((TokenType.IDENTIFIER,), "Expected parameter name.")
+                )
+                if not self.accept((TokenType.COMMA,)):
+                    break
+        self.expect((TokenType.RIGHT_PAREN,), "Expected ')' after parameters.")
+        self.expect((TokenType.LEFT_BRACE,), f"Expected '{{' before {kind} body.")
+        body = self.block_stmt()
+        return FunctionStmt(name, parameters, body.statements)
+
+    def block_stmt(self) -> BlockStmt:
         statements: list[Stmt] = []
         while not self.exhausted and self.lexer.peek().type != TokenType.RIGHT_BRACE:
             statements.append(self.declaration())

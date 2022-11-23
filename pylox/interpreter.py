@@ -28,6 +28,24 @@ class Clock(LoxCallable):
         return "<native fn>"
 
 
+class LoxFunction(LoxCallable):
+    def __init__(self, declaration: FunctionStmt):
+        self.declaration = declaration
+
+    def call(self, interpreter: "Interpreter", arguments: list):
+        environment = Environment(interpreter.globals)
+        for par, arg in zip(self.declaration.params, arguments):
+            environment.define(par.lexeme, arg)
+        interpreter.execute_block(self.declaration.body, environment)
+        return None
+
+    def arity(self):
+        return len(self.declaration.params)
+
+    def __str__(self):
+        return f"<fn {self.declaration.name.lexeme}>"
+
+
 class Interpreter(ExprVisitor, StmtVisitor):
     def __init__(self, lox):
         self.lox = lox
@@ -70,6 +88,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visit_expr_stmt(self, stmt: ExprStmt) -> None:
         _ = self.evaluate(stmt.expr)
+        return None
+
+    def visit_function_stmt(self, stmt: FunctionStmt) -> None:
+        function = LoxFunction(stmt)
+        self.environment.define(stmt.name.lexeme, function)
         return None
 
     def visit_if_stmt(self, stmt: IfStmt):

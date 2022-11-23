@@ -159,6 +159,16 @@ class VarStmt(Stmt):
 
 
 @dataclass
+class FunctionStmt(Stmt):
+    name: Token
+    params: list[Token]
+    body: list[Stmt]
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_function_stmt(self)
+
+
+@dataclass
 class IfStmt(Stmt):
     # "If         : Expr condition, Stmt thenBranch, Stmt elseBranch"
     condition: Expr
@@ -210,4 +220,8 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visit_while_stmt(self, stmt: WhileStmt):
+        pass
+
+    @abstractmethod
+    def visit_function_stmt(self, stmt: FunctionStmt):
         pass
