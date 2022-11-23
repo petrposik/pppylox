@@ -54,6 +54,17 @@ class Unary(Expr):
 
 
 @dataclass
+class Call(Expr):
+    # "Call     : Expr callee, Token paren, List<Expr> arguments",
+    callee: Expr
+    paren: Token
+    arguments: list[Expr]
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_call_expr(self)
+
+
+@dataclass
 class Grouping(Expr):
     expression: Expr
 
@@ -93,6 +104,10 @@ class ExprVisitor(ABC):
 
     @abstractmethod
     def visit_unary_expr(self, expr: Unary):
+        pass
+
+    @abstractmethod
+    def visit_call_expr(self, expr: Call):
         pass
 
     @abstractmethod

@@ -248,7 +248,28 @@ class Parser:
         if operator := self.accept((TokenType.BANG, TokenType.MINUS)):
             right: Expr = self.unary()
             return Unary(operator, right)
-        return self.primary()
+        return self.call()
+
+    def call(self) -> Expr:
+        expr = self.primary()
+        while True:
+            if self.accept((TokenType.LEFT_PAREN,)):
+                expr = self.finish_call(expr)
+            else:
+                break
+        return expr
+
+    def finish_call(self, callee: Expr) -> Expr:
+        arguments: list[Expr] = []
+        if not self.lexer.peek().type == TokenType.RIGHT_PAREN:
+            while True:
+                if len(arguments) >= 255:
+                    self.error(self.lexer.peek(), "Can't have more than 255 arguments.")
+                arguments.append(self.expression())
+                if not self.accept((TokenType.COMMA,)):
+                    break
+        paren = self.expect((TokenType.RIGHT_PAREN,), "Expected ')' after arguments.")
+        return Call(callee, paren, arguments)
 
     def primary(self) -> Expr:
         """Parse using the primary rule of the grammar

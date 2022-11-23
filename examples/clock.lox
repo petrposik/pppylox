@@ -1,0 +1,4 @@
+var start_time = clock();
+for (var i = 0; i < 20; i=i+1) {
+    print clock()-start_time;
+}

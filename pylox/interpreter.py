@@ -1,13 +1,39 @@
+from abc import ABC, abstractmethod
+import time
+
 from .ast import *
 from .lexer import *
 from .errors import *
 from .environment import *
 
 
+class LoxCallable(ABC):
+    @abstractmethod
+    def call(self, interpreter: "Interpreter", arguments: list):
+        pass
+
+    @abstractmethod
+    def arity(self) -> int:
+        pass
+
+
+class Clock(LoxCallable):
+    def arity(self):
+        return 0
+
+    def call(self, interpreter: "Interpreter", arguments: list):
+        return time.time()
+
+    def __str__(self):
+        return "<native fn>"
+
+
 class Interpreter(ExprVisitor, StmtVisitor):
     def __init__(self, lox):
         self.lox = lox
-        self.environment = Environment()
+        self.globals = Environment()
+        self.environment = self.globals
+        self.globals.define("clock", Clock())
 
     def interpret(self, statements: list[Stmt]) -> None:
         try:
@@ -118,6 +144,22 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 return float(left) * float(right)
         # Unreachable.
         return None
+
+    def visit_call_expr(self, expr: Call):
+        callee = self.evaluate(expr.callee)
+        arguments = [self.evaluate(arg) for arg in expr.arguments]
+        # Interface LoxCallable? See section 10.1.2
+        if not isinstance(callee, LoxCallable):
+            raise LoxRuntimeError(
+                expr.paren, "Only functions and classes can be called."
+            )
+        if len(arguments) != callee.arity():
+            raise LoxRuntimeError(
+                expr.paren,
+                f"Expected {callee.arity()} arguments, but got {len(arguments)}.",
+            )
+
+        return callee.call(self, arguments)
 
     def visit_grouping_expr(self, expr: Grouping):
         return self.evaluate(expr.expression)
