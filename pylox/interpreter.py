@@ -7,6 +7,14 @@ from .errors import *
 from .environment import *
 
 
+class ReturnException(LoxRuntimeError):
+    """Lox internal exception used when handling return statement"""
+
+    def __init__(self, value):
+        super().__init__(self, None)
+        self.value = value
+
+
 class LoxCallable(ABC):
     @abstractmethod
     def call(self, interpreter: "Interpreter", arguments: list):
@@ -36,7 +44,10 @@ class LoxFunction(LoxCallable):
         environment = Environment(interpreter.globals)
         for par, arg in zip(self.declaration.params, arguments):
             environment.define(par.lexeme, arg)
-        interpreter.execute_block(self.declaration.body, environment)
+        try:
+            interpreter.execute_block(self.declaration.body, environment)
+        except ReturnException as return_value:
+            return return_value.value
         return None
 
     def arity(self):
@@ -106,6 +117,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
         value = self.evaluate(stmt.expr)
         print(self.stringify(value))
         return None
+
+    def visit_return_stmt(self, stmt: ReturnStmt) -> None:
+        value = None
+        if stmt.value:
+            value = self.evaluate(stmt.value)
+        raise ReturnException(value)
 
     def visit_var_stmt(self, stmt: VarStmt) -> None:
         value = None

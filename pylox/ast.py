@@ -180,6 +180,16 @@ class IfStmt(Stmt):
 
 
 @dataclass
+class ReturnStmt(Stmt):
+    # "Return     : Token keyword, Expr value"
+    keyword: Token
+    value: Expr
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_return_stmt(self)
+
+
+@dataclass
 class WhileStmt(Stmt):
     # "While      : Expr condition, Stmt body"
     condition: Expr
@@ -224,4 +234,8 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visit_function_stmt(self, stmt: FunctionStmt):
+        pass
+
+    @abstractmethod
+    def visit_return_stmt(self, stmt: ReturnStmt):
         pass

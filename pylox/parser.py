@@ -77,6 +77,8 @@ class Parser:
             return self.if_stmt()
         if self.accept((TokenType.PRINT,)):
             return self.print_stmt()
+        if self.lexer.peek().type == TokenType.RETURN:  # Intentionally different
+            return self.return_stmt()
         if self.accept((TokenType.WHILE,)):
             return self.while_stmt()
         if self.accept((TokenType.LEFT_BRACE,)):
@@ -143,6 +145,14 @@ class Parser:
         value: Expr = self.expression()
         self.expect((TokenType.SEMICOLON,), "Expected ';' after value.")
         return PrintStmt(value)
+
+    def return_stmt(self) -> ReturnStmt:
+        keyword: Token = self.accept((TokenType.RETURN,))
+        value: Expr = None
+        if self.lexer.peek().type != TokenType.SEMICOLON:
+            value = self.expression()
+        self.expect((TokenType.SEMICOLON,), "Expected ';' after return value.")
+        return ReturnStmt(keyword, value)
 
     def var_declaration_stmt(self) -> Stmt:
         name: Token = self.expect((TokenType.IDENTIFIER,), "Variable name expected.")
