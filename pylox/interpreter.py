@@ -37,11 +37,12 @@ class Clock(LoxCallable):
 
 
 class LoxFunction(LoxCallable):
-    def __init__(self, declaration: FunctionStmt):
+    def __init__(self, declaration: FunctionStmt, closure: Environment):
         self.declaration = declaration
+        self.closure = closure
 
     def call(self, interpreter: "Interpreter", arguments: list):
-        environment = Environment(interpreter.globals)
+        environment = Environment(self.closure)
         for par, arg in zip(self.declaration.params, arguments):
             environment.define(par.lexeme, arg)
         try:
@@ -102,7 +103,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
         return None
 
     def visit_function_stmt(self, stmt: FunctionStmt) -> None:
-        function = LoxFunction(stmt)
+        function = LoxFunction(stmt, self.environment)
         self.environment.define(stmt.name.lexeme, function)
         return None
 
