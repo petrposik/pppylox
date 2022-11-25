@@ -13,7 +13,7 @@ class Expr(ABC):
         pass
 
 
-@dataclass
+@dataclass(frozen=True)
 class Assign(ABC):
     "Assign   : Token name, Expr value",
     name: Token
@@ -23,7 +23,7 @@ class Assign(ABC):
         return visitor.visit_assign_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Binary(Expr):
     left: Expr
     operator: Token
@@ -33,7 +33,7 @@ class Binary(Expr):
         return visitor.visit_binary_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Logical(Expr):
     # "Logical  : Expr left, Token operator, Expr right"
     left: Expr
@@ -44,7 +44,7 @@ class Logical(Expr):
         return visitor.visit_logical_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Unary(Expr):
     operator: Token
     right: Expr
@@ -53,7 +53,7 @@ class Unary(Expr):
         return visitor.visit_unary_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Call(Expr):
     # "Call     : Expr callee, Token paren, List<Expr> arguments",
     callee: Expr
@@ -64,7 +64,7 @@ class Call(Expr):
         return visitor.visit_call_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Grouping(Expr):
     expression: Expr
 
@@ -72,7 +72,7 @@ class Grouping(Expr):
         return visitor.visit_grouping_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Literal(Expr):
     value: Any
 
@@ -81,7 +81,7 @@ class Literal(Expr):
 
 
 # "Variable : Token name"
-@dataclass
+@dataclass(frozen=True)
 class Variable(Expr):
     name: Token
 
@@ -132,7 +132,7 @@ class Stmt(ABC):
         pass
 
 
-@dataclass
+@dataclass(frozen=True)
 class PrintStmt(Stmt):
     expr: Expr
 
@@ -140,7 +140,7 @@ class PrintStmt(Stmt):
         return visitor.visit_print_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ExprStmt(Stmt):
     expr: Expr
 
@@ -148,7 +148,7 @@ class ExprStmt(Stmt):
         return visitor.visit_expr_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class VarStmt(Stmt):
     # "Var        : Token name, Expr initializer"
     name: Token
@@ -158,7 +158,7 @@ class VarStmt(Stmt):
         return visitor.visit_var_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class FunctionStmt(Stmt):
     name: Token
     params: list[Token]
@@ -168,7 +168,7 @@ class FunctionStmt(Stmt):
         return visitor.visit_function_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class IfStmt(Stmt):
     # "If         : Expr condition, Stmt thenBranch, Stmt elseBranch"
     condition: Expr
@@ -179,7 +179,7 @@ class IfStmt(Stmt):
         return visitor.visit_if_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ReturnStmt(Stmt):
     # "Return     : Token keyword, Expr value"
     keyword: Token
@@ -189,7 +189,7 @@ class ReturnStmt(Stmt):
         return visitor.visit_return_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class WhileStmt(Stmt):
     # "While      : Expr condition, Stmt body"
     condition: Expr
@@ -199,7 +199,7 @@ class WhileStmt(Stmt):
         return visitor.visit_while_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class BlockStmt(Stmt):
     statements: list[Stmt]
 

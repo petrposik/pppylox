@@ -1,0 +1,12 @@
+var a = "global";
+{
+  fun showA() {
+    print a;
+  }
+
+  showA();
+  var a = "block";
+  showA();
+}
+// Should print "block" 2 times.
+// Value of a should be bound at the time when showA is defined.

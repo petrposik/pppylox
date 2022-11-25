@@ -10,6 +10,18 @@ class Environment:
     def define(self, name: str, value):
         self.values[name] = value
 
+    def get_at(self, distance: int, name: str):
+        return self.ancestor(distance).values[name]
+
+    def assign_at(self, distance: int, name: Token, value):
+        self.ancestor(distance).values[name.lexeme] = value
+
+    def ancestor(self, distance: int):
+        env: Environment = self
+        for _ in range(distance):
+            env = env.enclosing
+        return env
+
     def assign(self, name: Token, value):
         if name.lexeme in self.values:
             self.values[name.lexeme] = value

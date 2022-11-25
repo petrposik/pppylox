@@ -7,6 +7,7 @@ from pprint import pprint
 
 from .lexer import Lexer, Token, TokenType
 from .parser import Parser
+from .resolver import Resolver
 from .interpreter import Interpreter
 from .errors import *
 
@@ -49,5 +50,9 @@ class Lox:
         statements = parser.parse()
         # Stop if there was a syntax error.
         if parser.had_error:
+            return
+        resolver = Resolver(self, self.interpreter)
+        resolver.resolve(statements)
+        if self.had_error:
             return
         self.interpreter.interpret(statements)

@@ -82,7 +82,7 @@ token_type_from_identifier = {
 }
 
 
-@dataclass
+@dataclass(frozen=True)
 class Location:
     fpath: str | os.PathLike
     row: int
@@ -94,7 +94,7 @@ class Location:
         return f"{self.row}:{self.col}"
 
 
-@dataclass
+@dataclass(frozen=True)
 class Token:
     type: TokenType
     lexeme: str
