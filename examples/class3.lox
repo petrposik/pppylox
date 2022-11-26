@@ -1,0 +1,5 @@
+// Test an instance of a class can be created.
+class Bagel {}
+var bagel = Bagel();
+bagel.stuff = "ham";
+print bagel.stuff;  // Prints "ham"

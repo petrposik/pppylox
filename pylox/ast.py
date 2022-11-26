@@ -45,6 +45,17 @@ class Logical(Expr):
 
 
 @dataclass(frozen=True)
+class Set(Expr):
+    # "Set      : Expr object, Token name, Expr value"
+    obj: Expr
+    name: Token
+    value: Expr
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_set_expr(self)
+
+
+@dataclass(frozen=True)
 class Unary(Expr):
     operator: Token
     right: Expr
@@ -62,6 +73,16 @@ class Call(Expr):
 
     def accept(self, visitor: ExprVisitor):
         return visitor.visit_call_expr(self)
+
+
+@dataclass(frozen=True)
+class Get(Expr):
+    # "Get      : Expr object, Token name"
+    obj: Expr
+    name: Token
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_get_expr(self)
 
 
 @dataclass(frozen=True)
@@ -103,11 +124,19 @@ class ExprVisitor(ABC):
         pass
 
     @abstractmethod
+    def visit_set_expr(self, expr: Set):
+        pass
+
+    @abstractmethod
     def visit_unary_expr(self, expr: Unary):
         pass
 
     @abstractmethod
     def visit_call_expr(self, expr: Call):
+        pass
+
+    @abstractmethod
+    def visit_get_expr(self, expr: Get):
         pass
 
     @abstractmethod

@@ -76,9 +76,18 @@ class LoxClass(LoxCallable):
 class LoxInstance:
     def __init__(self, klass: LoxClass):
         self.klass = klass
+        self.fields = {}
 
     def __str__(self):
         return f"{self.klass.name} instance"
+
+    def get(self, name: Token):
+        if name.lexeme in self.fields:
+            return self.fields[name.lexeme]
+        raise LoxRuntimeError(name, f"Undefined property '{name.lexeme}'.")
+
+    def set(self, name: Token, value):
+        self.fields[name.lexeme] = value
 
 
 class Interpreter(ExprVisitor, StmtVisitor):
@@ -240,6 +249,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
         return callee.call(self, arguments)
 
+    def visit_get_expr(self, expr: Get):
+        obj = self.evaluate(expr.obj)
+        if isinstance(obj, LoxInstance):
+            return obj.get(expr.name)
+        raise LoxRuntimeError(expr.name, "Only instances have properties.")
+
     def visit_grouping_expr(self, expr: Grouping):
         return self.evaluate(expr.expression)
 
@@ -260,6 +275,14 @@ class Interpreter(ExprVisitor, StmtVisitor):
         # Evaluate the second operand if needed
         right = self.evaluate(expr.right)
         return right
+
+    def visit_set_expr(self, expr: Set):
+        obj = self.evaluate(expr.obj)
+        if not isinstance(obj, LoxInstance):
+            raise LoxRuntimeError(expr.name, "Only instances have fields.")
+        value = self.evaluate(expr.value)
+        obj.set(expr.name, value)
+        return value
 
     def visit_unary_expr(self, expr: Unary):
         right = self.evaluate(expr.right)

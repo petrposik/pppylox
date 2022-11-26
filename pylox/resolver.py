@@ -151,6 +151,10 @@ class Resolver(ExprVisitor, StmtVisitor):
             self.resolve(arg)
         return None
 
+    def visit_get_expr(self, expr: Get):
+        self.resolve(expr.obj)
+        return None
+
     def visit_grouping_expr(self, expr: Grouping):
         self.resolve(expr.expression)
         return None
@@ -161,6 +165,11 @@ class Resolver(ExprVisitor, StmtVisitor):
     def visit_logical_expr(self, expr: Logical):
         self.resolve(expr.left)
         self.resolve(expr.right)
+        return None
+
+    def visit_set_expr(self, expr: Set):
+        self.resolve(expr.value)
+        self.resolve(expr.obj)
         return None
 
     def visit_unary_expr(self, expr: Unary):

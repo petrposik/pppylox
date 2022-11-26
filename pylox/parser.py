@@ -219,6 +219,8 @@ class Parser:
             if isinstance(expr, Variable):
                 name: Token = expr.name
                 return Assign(name, value)
+            elif isinstance(expr, Get):
+                return Set(expr.obj, expr.name, value)
             self.error(equals, "Invalid assignment target.")
         return expr
 
@@ -298,6 +300,11 @@ class Parser:
         while True:
             if self.accept((TokenType.LEFT_PAREN,)):
                 expr = self.finish_call(expr)
+            elif self.accept((TokenType.DOT,)):
+                name = self.expect(
+                    (TokenType.IDENTIFIER,), "Expected property name after '.'."
+                )
+                expr = Get(expr, name)
             else:
                 break
         return expr
