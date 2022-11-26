@@ -92,7 +92,7 @@ class Parser:
         if self.accept((TokenType.SEMICOLON,)):
             initializer = None
         elif self.accept((TokenType.VAR,)):
-            initializer = self.var_declaration_stmt()
+            initializer = self.var_declaration()
         else:
             initializer = self.expr_stmt()
 
@@ -132,14 +132,25 @@ class Parser:
 
     def declaration(self) -> Stmt:
         try:
+            if self.accept((TokenType.CLASS,)):
+                return self.class_declaration()
             if self.accept((TokenType.FUN,)):
-                return self.function("function")
+                return self.function_declaration("function")
             if self.accept((TokenType.VAR,)):
-                return self.var_declaration_stmt()
+                return self.var_declaration()
             return self.statement()
         except LoxParserError:
             self.synchronize()
             return None
+
+    def class_declaration(self) -> ClassStmt:
+        name = self.expect((TokenType.IDENTIFIER,), "Expected class name.")
+        self.expect((TokenType.LEFT_BRACE,), "Expected '{' after class name.")
+        methods = []
+        while self.lexer.peek().type != TokenType.RIGHT_BRACE and not self.exhausted:
+            methods.append(self.function_declaration("method"))
+        self.expect((TokenType.RIGHT_BRACE,), "Expected '}' after class body.")
+        return ClassStmt(name, methods)
 
     def print_stmt(self) -> Stmt:
         value: Expr = self.expression()
@@ -154,7 +165,7 @@ class Parser:
         self.expect((TokenType.SEMICOLON,), "Expected ';' after return value.")
         return ReturnStmt(keyword, value)
 
-    def var_declaration_stmt(self) -> Stmt:
+    def var_declaration(self) -> Stmt:
         name: Token = self.expect((TokenType.IDENTIFIER,), "Variable name expected.")
         initializer: Expr = None
         if self.accept((TokenType.EQUAL,)):
@@ -174,7 +185,7 @@ class Parser:
         self.expect((TokenType.SEMICOLON,), "Expected ';' after expression.")
         return ExprStmt(expr)
 
-    def function(self, kind: str) -> FunctionStmt:
+    def function_declaration(self, kind: str) -> FunctionStmt:
         name: Token = self.expect((TokenType.IDENTIFIER,), f"Expected {kind} name.")
         self.expect((TokenType.LEFT_PAREN,), f"Expected '(' after {kind} name.")
         parameters = []

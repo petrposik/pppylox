@@ -58,6 +58,14 @@ class LoxFunction(LoxCallable):
         return f"<fn {self.declaration.name.lexeme}>"
 
 
+class LoxClass:
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return self.name
+
+
 class Interpreter(ExprVisitor, StmtVisitor):
     def __init__(self, lox):
         self.lox = lox
@@ -101,6 +109,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visit_block_stmt(self, stmt: BlockStmt):
         self.execute_block(stmt.statements, Environment(self.environment))
+        return None
+
+    def visit_class_stmt(self, stmt: ClassStmt):
+        self.environment.define(stmt.name.lexeme, None)
+        klass = LoxClass(stmt.name.lexeme)
+        self.environment.assign(stmt.name, klass)
         return None
 
     def visit_expr_stmt(self, stmt: ExprStmt) -> None:

@@ -159,6 +159,16 @@ class VarStmt(Stmt):
 
 
 @dataclass(frozen=True)
+class ClassStmt(Stmt):
+    # "Class      : Token name, List<Stmt.Function> methods"
+    name: Token
+    methods: list[FunctionStmt]
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_class_stmt(self)
+
+
+@dataclass(frozen=True)
 class FunctionStmt(Stmt):
     name: Token
     params: list[Token]
@@ -230,6 +240,10 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visit_while_stmt(self, stmt: WhileStmt):
+        pass
+
+    @abstractmethod
+    def visit_class_stmt(self, stmt: ClassStmt):
         pass
 
     @abstractmethod

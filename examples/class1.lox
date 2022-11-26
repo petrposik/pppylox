@@ -1,0 +1,9 @@
+// Test that class objects are actually being parsed and executed.
+
+class DevonshireCream {
+  serveOn() {
+    return "Scones";
+  }
+}
+
+print DevonshireCream; // Prints "DevonshireCream".

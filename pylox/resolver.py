@@ -22,6 +22,11 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.end_scope()
         return None
 
+    def visit_class_stmt(self, stmt: ClassStmt):
+        self.declare(stmt.name)
+        self.define(stmt.name)
+        return None
+
     def resolve(self, what):
         if isinstance(what, list):
             for stmt in what:
