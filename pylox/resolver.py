@@ -7,6 +7,7 @@ from .interpreter import Interpreter
 class FunctionType(Enum):
     NONE = 1
     FUNCTION = 2
+    METHOD = 3
 
 
 class Resolver(ExprVisitor, StmtVisitor):
@@ -15,17 +16,6 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.interpreter = interpreter
         self.scopes = []
         self.current_function = FunctionType.NONE
-
-    def visit_block_stmt(self, stmt: BlockStmt):
-        self.begin_scope()
-        self.resolve(stmt.statements)
-        self.end_scope()
-        return None
-
-    def visit_class_stmt(self, stmt: ClassStmt):
-        self.declare(stmt.name)
-        self.define(stmt.name)
-        return None
 
     def resolve(self, what):
         if isinstance(what, list):
@@ -38,11 +28,25 @@ class Resolver(ExprVisitor, StmtVisitor):
         else:
             assert False, "Unreachable"
 
+    def visit_block_stmt(self, stmt: BlockStmt):
+        self.begin_scope()
+        self.resolve(stmt.statements)
+        self.end_scope()
+        return None
+
     def begin_scope(self):
         self.scopes.append({})
 
     def end_scope(self):
         self.scopes.pop()
+
+    def visit_class_stmt(self, stmt: ClassStmt):
+        self.declare(stmt.name)
+        self.define(stmt.name)
+        for method in stmt.methods:
+            declaration = FunctionType.METHOD
+            self.resolve_function(method, declaration)
+        return None
 
     def visit_var_stmt(self, stmt: VarStmt):
         self.declare(stmt.name)

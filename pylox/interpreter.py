@@ -59,8 +59,12 @@ class LoxFunction(LoxCallable):
 
 
 class LoxClass(LoxCallable):
-    def __init__(self, name):
+    def __init__(self, name: str, methods: dict[str, LoxFunction]):
         self.name = name
+        self.methods = methods
+
+    def find_method(self, name: str):
+        return self.methods.get(name, None)
 
     def __str__(self):
         return self.name
@@ -84,6 +88,9 @@ class LoxInstance:
     def get(self, name: Token):
         if name.lexeme in self.fields:
             return self.fields[name.lexeme]
+        method = self.klass.find_method(name.lexeme)
+        if method:
+            return method
         raise LoxRuntimeError(name, f"Undefined property '{name.lexeme}'.")
 
     def set(self, name: Token, value):
@@ -137,7 +144,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visit_class_stmt(self, stmt: ClassStmt):
         self.environment.define(stmt.name.lexeme, None)
-        klass = LoxClass(stmt.name.lexeme)
+        methods = {}
+        for method in stmt.methods:
+            function = LoxFunction(method, self.environment)
+            methods[method.name.lexeme] = function
+        klass = LoxClass(stmt.name.lexeme, methods)
         self.environment.assign(stmt.name, klass)
         return None
 
