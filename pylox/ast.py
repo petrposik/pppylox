@@ -56,6 +56,15 @@ class Set(Expr):
 
 
 @dataclass(frozen=True)
+class This(Expr):
+    # "This     : Token keyword"
+    keyword: Token
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_this_expr(self)
+
+
+@dataclass(frozen=True)
 class Unary(Expr):
     operator: Token
     right: Expr
@@ -125,6 +134,10 @@ class ExprVisitor(ABC):
 
     @abstractmethod
     def visit_set_expr(self, expr: Set):
+        pass
+
+    @abstractmethod
+    def visit_this_expr(self, expr: This):
         pass
 
     @abstractmethod

@@ -51,6 +51,11 @@ class LoxFunction(LoxCallable):
             return return_value.value
         return None
 
+    def bind(self, instance: "LoxInstance") -> "LoxFunction":
+        environment = Environment(self.closure)
+        environment.define("this", instance)
+        return LoxFunction(self.declaration, environment)
+
     def arity(self):
         return len(self.declaration.params)
 
@@ -90,7 +95,7 @@ class LoxInstance:
             return self.fields[name.lexeme]
         method = self.klass.find_method(name.lexeme)
         if method:
-            return method
+            return method.bind(self)
         raise LoxRuntimeError(name, f"Undefined property '{name.lexeme}'.")
 
     def set(self, name: Token, value):
@@ -294,6 +299,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
         value = self.evaluate(expr.value)
         obj.set(expr.name, value)
         return value
+
+    def visit_this_expr(self, expr: This):
+        return self.lookup_variable(expr.keyword, expr)
 
     def visit_unary_expr(self, expr: Unary):
         right = self.evaluate(expr.right)

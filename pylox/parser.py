@@ -336,6 +336,9 @@ class Parser:
         if token := self.accept((TokenType.NUMBER, TokenType.STRING)):
             return Literal(token.literal)
 
+        if token := self.accept((TokenType.THIS,)):
+            return This(token)
+
         if token := self.accept((TokenType.IDENTIFIER,)):
             return Variable(token)
 

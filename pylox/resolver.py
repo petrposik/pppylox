@@ -43,9 +43,12 @@ class Resolver(ExprVisitor, StmtVisitor):
     def visit_class_stmt(self, stmt: ClassStmt):
         self.declare(stmt.name)
         self.define(stmt.name)
+        self.begin_scope()
+        self.scopes[-1]["this"] = True
         for method in stmt.methods:
             declaration = FunctionType.METHOD
             self.resolve_function(method, declaration)
+        self.end_scope()
         return None
 
     def visit_var_stmt(self, stmt: VarStmt):
@@ -174,6 +177,10 @@ class Resolver(ExprVisitor, StmtVisitor):
     def visit_set_expr(self, expr: Set):
         self.resolve(expr.value)
         self.resolve(expr.obj)
+        return None
+
+    def visit_this_expr(self, expr: This):
+        self.resolve_local(expr, expr.keyword)
         return None
 
     def visit_unary_expr(self, expr: Unary):
