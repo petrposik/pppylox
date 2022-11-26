@@ -37,9 +37,15 @@ class Clock(LoxCallable):
 
 
 class LoxFunction(LoxCallable):
-    def __init__(self, declaration: FunctionStmt, closure: Environment):
+    def __init__(
+        self,
+        declaration: FunctionStmt,
+        closure: Environment,
+        is_initializer: bool = False,
+    ):
         self.declaration = declaration
         self.closure = closure
+        self.is_initializer = is_initializer
 
     def call(self, interpreter: "Interpreter", arguments: list):
         environment = Environment(self.closure)
@@ -48,13 +54,17 @@ class LoxFunction(LoxCallable):
         try:
             interpreter.execute_block(self.declaration.body, environment)
         except ReturnException as return_value:
+            if self.is_initializer:
+                return self.closure.get_at(0, "this")
             return return_value.value
+        if self.is_initializer:
+            return self.closure.get_at(0, "this")
         return None
 
     def bind(self, instance: "LoxInstance") -> "LoxFunction":
         environment = Environment(self.closure)
         environment.define("this", instance)
-        return LoxFunction(self.declaration, environment)
+        return LoxFunction(self.declaration, environment, self.is_initializer)
 
     def arity(self):
         return len(self.declaration.params)
@@ -68,7 +78,7 @@ class LoxClass(LoxCallable):
         self.name = name
         self.methods = methods
 
-    def find_method(self, name: str):
+    def find_method(self, name: str) -> LoxFunction | None:
         return self.methods.get(name, None)
 
     def __str__(self):
@@ -76,9 +86,15 @@ class LoxClass(LoxCallable):
 
     def call(self, interpreter: "Interpreter", arguments: list):
         instance = LoxInstance(self)
+        initializer = self.find_method("init")
+        if initializer:
+            initializer.bind(instance).call(interpreter, arguments)
         return instance
 
     def arity(self):
+        initializer = self.find_method("init")
+        if initializer:
+            return initializer.arity()
         return 0
 
 
@@ -151,7 +167,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
         self.environment.define(stmt.name.lexeme, None)
         methods = {}
         for method in stmt.methods:
-            function = LoxFunction(method, self.environment)
+            function = LoxFunction(
+                method, self.environment, method.name.lexeme == "init"
+            )
             methods[method.name.lexeme] = function
         klass = LoxClass(stmt.name.lexeme, methods)
         self.environment.assign(stmt.name, klass)

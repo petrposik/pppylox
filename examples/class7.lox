@@ -1,0 +1,12 @@
+// Test initializer
+class Foo {
+  init() {
+    this.field = "Foo stuff";
+  }
+  to_string() {
+    return this.field + ", no arguments";
+  }
+}
+
+var foo = Foo();
+print foo.to_string();

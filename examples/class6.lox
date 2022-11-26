@@ -1,0 +1,9 @@
+// Test initializer
+class Foo {
+  init() {
+    print this;
+  }
+}
+
+var foo = Foo();   // prints "Foo instance" once
+print foo.init();  // prints "Foo instance" twice (once while executing init(), once as a result of print on this line)
