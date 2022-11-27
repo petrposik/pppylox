@@ -202,8 +202,9 @@ class VarStmt(Stmt):
 
 @dataclass(frozen=True)
 class ClassStmt(Stmt):
-    # "Class      : Token name, List<Stmt.Function> methods"
+    # "Class      : Token name, Expr.Variable superclass, List<Stmt.Function> methods"
     name: Token
+    superclass: Variable  # The superclass identifier is evaluated as variable access
     methods: list[FunctionStmt]
 
     def accept(self, visitor: StmtVisitor):

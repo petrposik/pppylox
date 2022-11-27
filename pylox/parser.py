@@ -145,12 +145,18 @@ class Parser:
 
     def class_declaration(self) -> ClassStmt:
         name = self.expect((TokenType.IDENTIFIER,), "Expected class name.")
+        superclass: Variable = None
+        if self.accept((TokenType.LESS,)):
+            superclass_name = self.expect(
+                (TokenType.IDENTIFIER,), "Expected superclass name."
+            )
+            superclass = Variable(superclass_name)
         self.expect((TokenType.LEFT_BRACE,), "Expected '{' after class name.")
         methods = []
         while self.lexer.peek().type != TokenType.RIGHT_BRACE and not self.exhausted:
             methods.append(self.function_declaration("method"))
         self.expect((TokenType.RIGHT_BRACE,), "Expected '}' after class body.")
-        return ClassStmt(name, methods)
+        return ClassStmt(name, superclass, methods)
 
     def print_stmt(self) -> Stmt:
         value: Expr = self.expression()

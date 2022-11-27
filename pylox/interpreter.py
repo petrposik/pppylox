@@ -74,8 +74,11 @@ class LoxFunction(LoxCallable):
 
 
 class LoxClass(LoxCallable):
-    def __init__(self, name: str, methods: dict[str, LoxFunction]):
+    def __init__(
+        self, name: str, superclass: "LoxClass", methods: dict[str, LoxFunction]
+    ):
         self.name = name
+        self.superclass = superclass
         self.methods = methods
 
     def find_method(self, name: str) -> LoxFunction | None:
@@ -164,6 +167,13 @@ class Interpreter(ExprVisitor, StmtVisitor):
         return None
 
     def visit_class_stmt(self, stmt: ClassStmt):
+        superclass = None
+        if stmt.superclass:
+            superclass = self.evaluate(stmt.superclass)
+            if not isinstance(superclass, LoxClass):
+                raise LoxRuntimeError(
+                    stmt.superclass.name, "Superclass must be a class."
+                )
         self.environment.define(stmt.name.lexeme, None)
         methods = {}
         for method in stmt.methods:
@@ -171,7 +181,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 method, self.environment, method.name.lexeme == "init"
             )
             methods[method.name.lexeme] = function
-        klass = LoxClass(stmt.name.lexeme, methods)
+        klass = LoxClass(stmt.name.lexeme, superclass, methods)
         self.environment.assign(stmt.name, klass)
         return None
 
