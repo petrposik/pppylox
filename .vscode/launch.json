@@ -33,7 +33,7 @@
             "args": [
                 "-m",
                 "pylox",
-                "./examples/static_scope.lox"
+                "./examples/class9.lox"
             ],
             "justMyCode": true,
         }
