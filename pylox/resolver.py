@@ -14,6 +14,7 @@ class FunctionType(Enum):
 class ClassType(Enum):
     NONE = 0
     CLASS = 1
+    SUBCLASS = 2
 
 
 class Resolver(ExprVisitor, StmtVisitor):
@@ -54,10 +55,14 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.define(stmt.name)
         if stmt.superclass:
             if stmt.name.lexeme == stmt.superclass.name.lexeme:
-                self.lox.error(
+                self.lox.error_at(
                     stmt.superclass.name, "A class can't inherit from itself."
                 )
+            self.current_class = ClassType.SUBCLASS
             self.resolve(stmt.superclass)
+        if stmt.superclass:
+            self.begin_scope()
+            self.scopes[-1]["super"] = True
         self.begin_scope()
         self.scopes[-1]["this"] = True
         for method in stmt.methods:
@@ -66,6 +71,8 @@ class Resolver(ExprVisitor, StmtVisitor):
                 declaration = FunctionType.INITIALIZER
             self.resolve_function(method, declaration)
         self.end_scope()
+        if stmt.superclass:
+            self.end_scope()
         self.current_class = enclosing_class
         return None
 
@@ -155,7 +162,7 @@ class Resolver(ExprVisitor, StmtVisitor):
 
     def visit_return_stmt(self, stmt: ReturnStmt):
         if self.current_function == FunctionType.NONE:
-            self.lox.error(stmt.keyword, "Can't return from top-level code.")
+            self.lox.error_at(stmt.keyword, "Can't return from top-level code.")
         if stmt.value:
             if self.current_function == FunctionType.INITIALIZER:
                 self.lox.error_at(
@@ -201,9 +208,19 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.resolve(expr.obj)
         return None
 
+    def visit_super_expr(self, expr: Super):
+        if self.current_class == ClassType.NONE:
+            self.lox.error_at(expr.keyword, "Can't use 'super' outside of a class.")
+        elif self.current_class != ClassType.SUBCLASS:
+            self.lox.error_at(
+                expr.keyword, "Can't use 'super' in a class with no superclass."
+            )
+        self.resolve_local(expr, expr.keyword)
+        return None
+
     def visit_this_expr(self, expr: This):
         if self.current_class == ClassType.NONE:
-            self.lox.error(expr.keyword, "Can't you 'this' outside of a class.")
+            self.lox.error_at(expr.keyword, "Can't you 'this' outside of a class.")
         self.resolve_local(expr, expr.keyword)
         return None
 

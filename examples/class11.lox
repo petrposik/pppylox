@@ -1,0 +1,8 @@
+// Test that super cannot be used in a class withou superclass.
+
+class Eclair {
+  cook() {
+    super.cook();
+    print "Pipe full of crème pâtissière.";
+  }
+}

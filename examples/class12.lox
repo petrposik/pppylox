@@ -1,0 +1,3 @@
+// Test that super cannot be used outside of a class.
+
+super.notEvenInAClass();

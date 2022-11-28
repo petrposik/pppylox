@@ -179,6 +179,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
                     stmt.superclass.name, "Superclass must be a class."
                 )
         self.environment.define(stmt.name.lexeme, None)
+
+        if stmt.superclass:
+            self.environment = Environment(self.environment)
+            self.environment.define("super", superclass)
+
         methods = {}
         for method in stmt.methods:
             function = LoxFunction(
@@ -186,6 +191,10 @@ class Interpreter(ExprVisitor, StmtVisitor):
             )
             methods[method.name.lexeme] = function
         klass = LoxClass(stmt.name.lexeme, superclass, methods)
+
+        if stmt.superclass:
+            self.environment = self.environment.enclosing
+
         self.environment.assign(stmt.name, klass)
         return None
 
@@ -331,6 +340,17 @@ class Interpreter(ExprVisitor, StmtVisitor):
         value = self.evaluate(expr.value)
         obj.set(expr.name, value)
         return value
+
+    def visit_super_expr(self, expr: Super):
+        distance = self.locals.get(expr, None)
+        superclass: LoxClass = self.environment.get_at(distance, "super")
+        obj: LoxInstance = self.environment.get_at(distance - 1, "this")
+        method: LoxFunction = superclass.find_method(expr.method.lexeme)
+        if not method:
+            raise LoxRuntimeError(
+                expr.method, f"Undefined property '{expr.method.lexeme}'."
+            )
+        return method.bind(obj)
 
     def visit_this_expr(self, expr: This):
         return self.lookup_variable(expr.keyword, expr)

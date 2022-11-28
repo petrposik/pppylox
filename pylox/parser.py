@@ -342,6 +342,13 @@ class Parser:
         if token := self.accept((TokenType.NUMBER, TokenType.STRING)):
             return Literal(token.literal)
 
+        if token := self.accept((TokenType.SUPER,)):
+            self.expect((TokenType.DOT,), "Expected '.' after 'super'.")
+            method = self.expect(
+                (TokenType.IDENTIFIER,), "Expected superclass method name."
+            )
+            return Super(token, method)
+
         if token := self.accept((TokenType.THIS,)):
             return This(token)
 

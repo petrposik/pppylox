@@ -56,6 +56,16 @@ class Set(Expr):
 
 
 @dataclass(frozen=True)
+class Super(Expr):
+    # "Super    : Token keyword, Token method"
+    keyword: Token
+    method: Token
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_super_expr(self)
+
+
+@dataclass(frozen=True)
 class This(Expr):
     # "This     : Token keyword"
     keyword: Token
@@ -134,6 +144,10 @@ class ExprVisitor(ABC):
 
     @abstractmethod
     def visit_set_expr(self, expr: Set):
+        pass
+
+    @abstractmethod
+    def visit_super_expr(self, expr: Super):
         pass
 
     @abstractmethod
